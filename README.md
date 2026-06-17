@@ -135,7 +135,7 @@ To support students first understanding specific security vulnerabilities and pr
 | Spear phishing     | A targetted attack where the threat actor has personal knowledge of the victim                                         |
 | Threat actor       | A person or group with malicious intentions                                                                            |
 | Vulnerability      | A weakness in a system, hardware or software                                                                           |
-| Whale phishing     | A targetted attack by a threat actor where the victim is known to have escalated authorisation in a system or software |
+| Whale phishing     | A targetted attack by a threat actor where the victim is known to have escalated authorisation in a system or software | 
 
 ---
 

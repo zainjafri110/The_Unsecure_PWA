@@ -1,28 +1,35 @@
 import sqlite3 as sql
 import time
 import random
+import hashlib
 
 
 def insertUser(username, password, DoB):
+    if len(password) < 8:
+        return False
+
+    hashed_password = hashlib.sha256(password.encode()).hexdigest()
     con = sql.connect("database_files/database.db")
     cur = con.cursor()
     cur.execute(
         "INSERT INTO users (username,password,dateOfBirth) VALUES (?,?,?)",
-        (username, password, DoB),
+        (username, hashed_password, DoB),
     )
     con.commit()
     con.close()
+    return True
 
 
 def retrieveUsers(username, password):
     con = sql.connect("database_files/database.db")
     cur = con.cursor()
-    cur.execute("SELECT * FROM users WHERE username = ?", (username,))
-    if cur.fetchone() == None:
-        con.close()
-        return False
-    else:
-        cur.execute("SELECT * FROM users WHERE password = ?", (password,))
+    incoming_password_hash = hashlib.sha256(password.encode()).hexdigest()
+    cur.execute(
+        "SELECT * FROM users WHERE username = ? AND password = ?",
+        (username, incoming_password_hash),
+    )
+
+    if cur.fetchone() != None:
         # Plain text log of visitor count as requested by Unsecure PWA management
         with open("visitor_log.txt", "r") as file:
             number = int(file.read().strip())
@@ -31,12 +38,11 @@ def retrieveUsers(username, password):
             file.write(str(number))
         # Simulate response time of heavy app for testing purposes
         time.sleep(random.randint(80, 90) / 1000)
-        if cur.fetchone() == None:
-            con.close()
-            return False
-        else:
-            con.close()
-            return True
+        con.close()
+        return True
+
+    con.close()
+    return False
 
 
 def insertFeedback(feedback):

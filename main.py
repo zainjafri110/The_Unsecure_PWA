@@ -2,72 +2,116 @@ from flask import Flask
 from flask import render_template
 from flask import request
 from flask import redirect
-from flask_cors import CORS
+from flask import session
+import os
+from flask_wtf import FlaskForm
+from flask_wtf.csrf import CSRFProtect
 import user_management as dbHandler
 
 # Code snippet for logging a message
 # app.logger.critical("message")
 
 app = Flask(__name__)
-# Enable CORS to allow cross-origin requests (needed for CSRF demo in Codespaces)
-CORS(app)
+# Secret key for CSRF protection
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
+if not app.config["SECRET_KEY"]:
+    raise ValueError("SECRET_KEY environment variable must be set")
+
+csrf = CSRFProtect(app)
 
 
-@app.route("/success.html", methods=["POST", "GET", "PUT", "PATCH", "DELETE"])
+class CSRFOnlyForm(FlaskForm):
+    pass
+
+
+@app.route("/success.html", methods=["POST", "GET"])
 def addFeedback():
+    form = CSRFOnlyForm()
+    
+    # Check if user is logged in
+    if "username" not in session:
+        return redirect("/?msg=Please login first")
+    
     if request.method == "GET" and request.args.get("url"):
         url = request.args.get("url", "")
-        return redirect(url, code=302)
+        # Only allow relative URLs to prevent open redirect attacks
+        if url and not url.startswith('http'):
+            return redirect(url, code=302)
+        else:
+            return redirect("/success.html")
+    
     if request.method == "POST":
         feedback = request.form["feedback"]
         dbHandler.insertFeedback(feedback)
         dbHandler.listFeedback()
-        return render_template("/success.html", state=True, value="Back")
+        return render_template("/success.html", state=True, value=session["username"], form=form)
     else:
         dbHandler.listFeedback()
-        return render_template("/success.html", state=True, value="Back")
+        return render_template("/success.html", state=True, value=session["username"], form=form)
 
 
-@app.route("/signup.html", methods=["POST", "GET", "PUT", "PATCH", "DELETE"])
+@app.route("/signup.html", methods=["POST", "GET"])
 def signup():
+    form = CSRFOnlyForm()
     if request.method == "GET" and request.args.get("url"):
         url = request.args.get("url", "")
-        return redirect(url, code=302)
+        # Only allow relative URLs to prevent open redirect attacks
+        if url and not url.startswith('http'):
+            return redirect(url, code=302)
+        else:
+            return redirect("/signup.html")
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
         DoB = request.form["dob"]
-        dbHandler.insertUser(username, password, DoB)
-        return render_template("/index.html")
+        isUserCreated = dbHandler.insertUser(username, password, DoB)
+        if isUserCreated:
+            return render_template("/index.html", form=form)
+        else:
+            return render_template(
+                "/signup.html", msg="Password must be at least 8 characters.", form=form
+            )
     else:
-        return render_template("/signup.html")
+        return render_template("/signup.html", form=form)
 
 
-@app.route("/index.html", methods=["POST", "GET", "PUT", "PATCH", "DELETE"])
+@app.route("/index.html", methods=["POST", "GET"])
 @app.route("/", methods=["POST", "GET"])
 def home():
-    # Simple Dynamic menu
+    form = CSRFOnlyForm()
+    
     if request.method == "GET" and request.args.get("url"):
         url = request.args.get("url", "")
-        return redirect(url, code=302)
+        # Only allow relative URLs to prevent open redirect attacks
+        if url and not url.startswith('http'):
+            return redirect(url, code=302)
+        else:
+            return redirect("/")
+    
     # Pass message to front end
-    elif request.method == "GET":
+    if request.method == "GET":
         msg = request.args.get("msg", "")
-        return render_template("/index.html", msg=msg)
-    elif request.method == "POST":
+        return render_template("/index.html", msg=msg, form=form)
+    
+    # Handle login
+    if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
         isLoggedIn = dbHandler.retrieveUsers(username, password)
         if isLoggedIn:
+            # Store username in session
+            session["username"] = username
             dbHandler.listFeedback()
-            return render_template("/success.html", value=username, state=isLoggedIn)
+            return render_template(
+                "/success.html", value=username, state=isLoggedIn, form=form
+            )
         else:
-            return render_template("/index.html")
-    else:
-        return render_template("/index.html")
+            return render_template("/index.html", form=form)
+    
+    return render_template("/index.html", form=form)
 
 
 if __name__ == "__main__":
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=False, host="127.0.0.1", port=5000)

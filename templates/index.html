@@ -1,6 +1,7 @@
 {% extends 'layout.html' %} {% block content %}
 <h1>Login</h1>
 <form action="/" method="post" class="box">
+  {{ form.csrf_token }}
   <div class="input__wrapper">
     <input
       type="text"

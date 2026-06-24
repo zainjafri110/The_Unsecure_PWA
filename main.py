@@ -4,6 +4,7 @@ from flask import request
 from flask import redirect
 from flask import session
 import os
+from urllib.parse import urlparse
 from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect
 import user_management as dbHandler
@@ -34,8 +35,11 @@ def addFeedback():
     
     if request.method == "GET" and request.args.get("url"):
         url = request.args.get("url", "")
-        # Only allow relative URLs to prevent open redirect attacks
-        if url and not url.startswith('http'):
+        # Parse the URL to check if it's a local relative path
+        parsed_url = urlparse(url)
+        # netloc is empty for relative URLs like "/index.html"
+        # netloc has a value for absolute URLs like "http://evil.com"
+        if url and not parsed_url.netloc:
             return redirect(url, code=302)
         else:
             return redirect("/success.html")
@@ -55,8 +59,11 @@ def signup():
     form = CSRFOnlyForm()
     if request.method == "GET" and request.args.get("url"):
         url = request.args.get("url", "")
-        # Only allow relative URLs to prevent open redirect attacks
-        if url and not url.startswith('http'):
+        # Parse the URL to check if it's a local relative path
+        parsed_url = urlparse(url)
+        # netloc is empty for relative URLs like "/index.html"
+        # netloc has a value for absolute URLs like "http://evil.com"
+        if url and not parsed_url.netloc:
             return redirect(url, code=302)
         else:
             return redirect("/signup.html")
@@ -82,8 +89,11 @@ def home():
     
     if request.method == "GET" and request.args.get("url"):
         url = request.args.get("url", "")
-        # Only allow relative URLs to prevent open redirect attacks
-        if url and not url.startswith('http'):
+        # Parse the URL to check if it's a local relative path
+        parsed_url = urlparse(url)
+        # netloc is empty for relative URLs like "/index.html"
+        # netloc has a value for absolute URLs like "http://evil.com"
+        if url and not parsed_url.netloc:
             return redirect(url, code=302)
         else:
             return redirect("/")

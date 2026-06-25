@@ -18,6 +18,12 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
 if not app.config["SECRET_KEY"]:
     raise ValueError("SECRET_KEY environment variable must be set")
 
+# Session cookie security settings
+# These protect user sessions from being hijacked
+app.config["SESSION_COOKIE_SECURE"] = True      # Only send cookie over HTTPS
+app.config["SESSION_COOKIE_HTTPONLY"] = True    # Prevent JavaScript from accessing cookie
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"   # Protect against CSRF attacks
+
 csrf = CSRFProtect(app)
 
 

@@ -27,6 +27,14 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Lax"   # Protect against CSRF attacks
 csrf = CSRFProtect(app)
 
 
+# Add security headers to all responses
+@app.after_request
+def add_security_headers(response):
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
+
+
 class CSRFOnlyForm(FlaskForm):
     pass
 

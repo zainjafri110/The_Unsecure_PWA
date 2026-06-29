@@ -13,4 +13,17 @@
         <button type="submit" class="btn">Sign Up</button>
     </div>
 </form>
+
+<div class="password-requirements">
+    <h3>Password Requirements:</h3>
+    <ul>
+        <li>At least 8 characters long</li>
+        <li>Mix of letters and numbers recommended</li>
+    </ul>
+</div>
+
+{% if msg %}
+<div class="error-message">{{ msg }}</div>
+{% endif %}
 {% endblock %}
+

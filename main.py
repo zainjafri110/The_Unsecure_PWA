@@ -55,8 +55,19 @@ limiter = Limiter(
 def add_security_headers(response):
     response.headers["X-Frame-Options"] = "SAMEORIGIN"
     response.headers["X-Content-Type-Options"] = "nosniff"
+    # strict transport security
+    response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
+    # referrer policy
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    # permissions policy
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    # cross origin policies
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+    response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
     # content security policy
-    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests;"
+    # hide server version
+    response.headers["Server"] = "Flask"
     return response
 
 
@@ -118,7 +129,7 @@ def signup():
             return redirect("/2fa-setup.html")
         else:
             return render_template(
-                "/signup.html", msg="Password must be at least 8 characters.", form=form
+                "/signup.html", msg="Error: Password must be at least 8 characters long. Please choose a stronger password.", form=form
             )
     else:
         return render_template("/signup.html", form=form)

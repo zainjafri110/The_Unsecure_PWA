@@ -27,8 +27,8 @@
             <em>This progressive web app has been written specifically for students studying the 'Secure Software Architecture' unit. The application has been written with intentional vunerabilities that students are to identify and implement solutions. Users should not use this as a template or enter any real data when interacting with the application.</em>
         </div>
     {% block content %}{% endblock %}
-    <script src="static/js/serviceWorker.js"></script>
-    <script src="static/js/app.js"></script>
-    <script src="https//getfreebootstrap.ru/bootstrap.js"></script>    
+    <script src="{{ url_for('static', filename='js/serviceWorker.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>    
 </body>
 </html>

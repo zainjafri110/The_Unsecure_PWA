@@ -32,6 +32,11 @@ csrf = CSRFProtect(app)
 def add_security_headers(response):
     response.headers["X-Frame-Options"] = "SAMEORIGIN"
     response.headers["X-Content-Type-Options"] = "nosniff"
+    # Content Security Policy - controls what resources can be loaded
+    # default-src 'self': Only allow resources from same origin
+    # script-src: Allow scripts from same origin and inline scripts (needed for CSRF)
+    # style-src: Allow styles from same origin and inline styles
+    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
     return response
 
 

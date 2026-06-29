@@ -258,7 +258,8 @@ def home():
                     "/success.html", value=username, state=isLoggedIn, form=form
                 )
         else:
-            return render_template("/index.html", form=form)
+            # login failed show error
+            return render_template("/index.html", msg="Error: Invalid username or password. Please try again.", form=form)
     
     return render_template("/index.html", form=form)
 

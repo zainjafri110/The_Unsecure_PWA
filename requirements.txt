@@ -2,7 +2,7 @@ Flask
 Flask-csp
 Flask-WTF
 Flask-Limiter
-qrcode
+pyqrcode
 pyotp
 bcrypt
 requests

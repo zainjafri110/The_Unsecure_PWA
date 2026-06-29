@@ -64,3 +64,28 @@ def listFeedback():
         f.write(f"{row[1]}\n")
         f.write("</p>\n")
     f.close()
+
+
+def save2FASecret(username, secret):
+    con = sql.connect("database_files/database.db")
+    cur = con.cursor()
+    cur.execute(
+        "UPDATE users SET twofa_secret = ? WHERE username = ?",
+        (secret, username)
+    )
+    con.commit()
+    con.close()
+
+
+def get2FASecret(username):
+    con = sql.connect("database_files/database.db")
+    cur = con.cursor()
+    cur.execute(
+        "SELECT twofa_secret FROM users WHERE username = ?",
+        (username,)
+    )
+    result = cur.fetchone()
+    con.close()
+    if result:
+        return result[0]
+    return None

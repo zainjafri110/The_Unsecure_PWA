@@ -12,6 +12,8 @@ from io import BytesIO
 from urllib.parse import urlparse
 from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import user_management as dbHandler
 
 app = Flask(__name__)
@@ -40,6 +42,13 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 csrf = CSRFProtect(app)
 
+# rate limiter for race condition protection
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
+
 
 # add security headers
 @app.after_request
@@ -56,6 +65,7 @@ class CSRFOnlyForm(FlaskForm):
 
 
 @app.route("/success.html", methods=["POST", "GET"])
+@limiter.limit("5 per minute")
 def addFeedback():
     form = CSRFOnlyForm()
     
@@ -84,6 +94,7 @@ def addFeedback():
 
 
 @app.route("/signup.html", methods=["POST", "GET"])
+@limiter.limit("3 per minute")
 def signup():
     form = CSRFOnlyForm()
     if request.method == "GET" and request.args.get("url"):
@@ -114,6 +125,7 @@ def signup():
 
 
 @app.route("/2fa-setup.html", methods=["POST", "GET"])
+@limiter.limit("3 per minute")
 def two_factor_setup():
     form = CSRFOnlyForm()
     
@@ -157,6 +169,7 @@ def two_factor_setup():
 
 
 @app.route("/2fa-login.html", methods=["POST", "GET"])
+@limiter.limit("5 per minute")
 def two_factor_login():
     form = CSRFOnlyForm()
     
@@ -194,6 +207,7 @@ def two_factor_login():
 
 @app.route("/index.html", methods=["POST", "GET"])
 @app.route("/", methods=["POST", "GET"])
+@limiter.limit("10 per minute")
 def home():
     form = CSRFOnlyForm()
     
